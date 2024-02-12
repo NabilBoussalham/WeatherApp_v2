@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="70dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_centerVertical="true"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingLeft="14dp"
+    android:paddingRight="14dp">
+
+
+    <TextView
+        android:id="@+id/day"
+        android:layout_width="126dp"
+        android:layout_height="47dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="9dp"
+        android:layout_marginLeft="-12dp"
+        android:layout_marginTop="11dp"
+        android:layout_marginEnd="120dp"
+        android:layout_marginBottom="12dp"
+        android:layout_toStartOf="@+id/temp"
+        android:gravity="center"
+        android:text="Sat, Nov 21"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/temp"
+        android:layout_width="wrap_content"
+        android:layout_height="43dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginTop="13dp"
+        android:layout_marginRight="7dp"
+        android:layout_marginBottom="14dp"
+        android:fontFamily="@font/merriweathersans_bold"
+        android:gravity="center"
+        android:text="20 C"
+        android:textSize="16sp" />
+
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/icon"
+        android:layout_width="wrap_content"
+        android:layout_height="52dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="0dp"
+        android:layout_marginEnd="1dp"
+        android:layout_marginBottom="0dp"
+        android:layout_toStartOf="@+id/day"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true"
+        app:lottie_rawRes="@raw/sun"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="-1dp" />
+
+    <TextView
+        android:id="@+id/conditionDay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginTop="23dp"
+        android:layout_marginEnd="29dp"
+        android:layout_marginBottom="28dp"
+        android:layout_toStartOf="@+id/temp"
+        android:text="sunny" />
+
+</RelativeLayout>
+

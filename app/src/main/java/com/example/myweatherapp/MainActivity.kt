@@ -1,14 +1,17 @@
 package com.example.myweatherapp
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Bundle
-import android.view.Gravity
-import android.view.View
-import android.widget.FrameLayout
+import android.view.inputmethod.InputMethodManager
 import android.widget.ListView
 import android.widget.SearchView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.example.myweatherapp.Forecast.ForecastAdapter
 import com.example.myweatherapp.Forecast.ForecastData
 import com.example.myweatherapp.Forecast.ForecastItem
@@ -17,15 +20,15 @@ import com.example.myweatherapp.Forecast.apiInterface
 import com.example.myweatherapp.WeatherNow.ApiInterface
 import com.example.myweatherapp.WeatherNow.WeatherApp
 import com.example.myweatherapp.databinding.ActivityMainBinding
-import com.google.android.material.snackbar.Snackbar
+import com.google.android.gms.location.*
+import com.google.android.gms.tasks.OnSuccessListener
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import java.util.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -33,21 +36,130 @@ class MainActivity : AppCompatActivity() {
         ActivityMainBinding.inflate(layoutInflater)
     }
 
+    private val PREFS_FILE_NAME = "MyWeatherAppPrefs"
+    private val PREF_KEY_LATITUDE = "latitude"
+    private val PREF_KEY_LONGITUDE = "longitude"
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var locationRequest: LocationRequest
     private var forecastDataList: List<ForecastItem> = emptyList()
     private lateinit var listView: ListView
     private val OPEN_WEATHER_MAP_API_KEY = "3d344a40ad6dba03dee8bd14f0d2d047"
     private val API_BASE_URL = "https://api.openweathermap.org/data/2.5/"
     private var currentWeatherApp: WeatherApp? = null
+    private val locationPermissionCode = 1
+
+    private lateinit var locationCallback: LocationCallback
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        fetchWeatherData("sidi bennour")
+
+        val savedLatitude = getDoublePreference(PREF_KEY_LATITUDE)
+        val savedLongitude = getDoublePreference(PREF_KEY_LONGITUDE)
+
+        if (savedLatitude != null && savedLongitude != null) {
+            // Location exists, fetch weather data with saved location
+            fetchWeatherDataByLocation(savedLatitude, savedLongitude)
+        } else {
+            // Location doesn't exist, request location updates
+            setupLocation()
+        }
+        setupLocation()
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
+        fetchWeatherDataByLocation()
 
         setupSearchCity()
         listView = findViewById(R.id.forecastListView)
     }
 
+    private fun setupLocation() {
+        // Check and request location permissions
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ),
+                locationPermissionCode
+            )
+        } else {
+            createLocationRequest()
+            createLocationCallback()
+            startLocationUpdates()
+        }
+    }
+
+    private fun createLocationRequest() {
+        locationRequest = LocationRequest.create().apply {
+            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+            interval = 10000 // Update location every 10 seconds
+        }
+    }
+
+    private fun createLocationCallback() {
+        locationCallback = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult?) {
+                locationResult?.lastLocation?.let { location ->
+                    // Handle location updates here
+                    val latitude = location.latitude
+                    val longitude = location.longitude
+
+                    // Save the location to SharedPreferences
+                    saveDoublePreference(PREF_KEY_LATITUDE, latitude)
+                    saveDoublePreference(PREF_KEY_LONGITUDE, longitude)
+
+                    // Call the method to fetch weather data with the new location
+                    fetchWeatherDataByLocation(latitude, longitude)
+                } ?: run {
+                    // If location is not available, set default city to Rabat
+                    fetchWeatherData("Rabat")
+                }
+            }
+        }
+    }
+    private fun saveDoublePreference(key: String, value: Double) {
+        val sharedPreferences = getSharedPreferences(PREFS_FILE_NAME, Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.putLong(key, java.lang.Double.doubleToRawLongBits(value))
+        editor.apply()
+    }
+
+    private fun getDoublePreference(key: String): Double? {
+        val sharedPreferences = getSharedPreferences(PREFS_FILE_NAME, Context.MODE_PRIVATE)
+        val rawValue = sharedPreferences.getLong(key, java.lang.Double.doubleToRawLongBits(0.0))
+        return java.lang.Double.longBitsToDouble(rawValue)
+    }
+
+    private fun startLocationUpdates() {
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return
+        }
+        LocationServices.getFusedLocationProviderClient(this)
+            .requestLocationUpdates(locationRequest, locationCallback, null)
+    }
+
+    private fun stopLocationUpdates() {
+        LocationServices.getFusedLocationProviderClient(this)
+            .removeLocationUpdates(locationCallback)
+    }
 
     private fun setupSearchCity() {
         val searchView = binding.searchView
@@ -55,12 +167,82 @@ class MainActivity : AppCompatActivity() {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 if (!query.isNullOrEmpty()) {
                     fetchWeatherData(query)
+                    hideKeyboard()
                 }
                 return true
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
                 return true
+            }
+        })
+
+        // Handle the "Submit" button press on the soft keyboard
+        searchView.setOnQueryTextFocusChangeListener { _, hasFocus ->
+            if (!hasFocus) {
+                hideKeyboard()
+            }
+        }
+    }
+
+    private fun hideKeyboard() {
+        val inputMethodManager =
+            getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        inputMethodManager.hideSoftInputFromWindow(
+            currentFocus?.windowToken,
+            InputMethodManager.HIDE_NOT_ALWAYS
+        )
+    }
+
+    private fun fetchWeatherDataByLocation() {
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            fusedLocationClient.lastLocation
+                .addOnSuccessListener(OnSuccessListener { location ->
+                    if (location != null) {
+                        val latitude = location.latitude
+                        val longitude = location.longitude
+                        fetchWeatherDataByLocation(latitude, longitude)
+                    }
+                })
+        }
+    }
+
+    private fun fetchWeatherDataByLocation(latitude: Double, longitude: Double) {
+        val retrofit = Retrofit.Builder()
+            .addConverterFactory(GsonConverterFactory.create())
+            .baseUrl(API_BASE_URL)
+            .build().create(ApiInterface::class.java)
+
+        val response = retrofit.getWeatherDataByLocation(
+            latitude, longitude, OPEN_WEATHER_MAP_API_KEY, "metric"
+        )
+
+        response.enqueue(object : Callback<WeatherApp> {
+            override fun onResponse(call: Call<WeatherApp>, response: Response<WeatherApp>) {
+                val responseBody = response.body()
+                if (response.isSuccessful && responseBody != null) {
+                    handleWeatherData(responseBody)
+                    getForecastData(responseBody.name)
+                    currentWeatherApp = responseBody
+                } else {
+                    Toast.makeText(
+                        this@MainActivity,
+                        "City not found. Please enter a valid city name.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+
+            override fun onFailure(call: Call<WeatherApp>, t: Throwable) {
+                Toast.makeText(
+                    this@MainActivity,
+                    "API request failed: ${t.message}",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         })
     }
@@ -201,14 +383,5 @@ class MainActivity : AppCompatActivity() {
         binding.img.playAnimation()
     }
 
-    private fun showErrorMessage(message: String) {
-        val rootView = findViewById<View>(android.R.id.content)
-        val snackbar = Snackbar.make(rootView, message, Snackbar.LENGTH_SHORT)
-        val snackbarView = snackbar.view
-        val params = snackbarView.layoutParams as FrameLayout.LayoutParams
-        params.gravity = Gravity.TOP
-        snackbarView.layoutParams = params
-        snackbar.show()
-    }
-
 }
+

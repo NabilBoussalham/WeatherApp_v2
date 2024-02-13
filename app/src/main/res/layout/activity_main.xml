@@ -32,7 +32,7 @@
 
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
-                    android:layout_marginTop="10dp"
+                    android:layout_marginTop="6dp"
                     android:layout_marginEnd="8dp"
                     android:background="@drawable/searchstyle"
                     android:iconifiedByDefault="false"
@@ -132,7 +132,7 @@
                     android:layout_height="220dp"
                     android:layout_marginStart="16dp"
                     android:layout_marginEnd="16dp"
-                    android:layout_marginBottom="140dp"
+                    android:layout_marginBottom="148dp"
                     android:background="@drawable/backgroundshape"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -378,17 +378,52 @@
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="780dp"
-                android:layout_marginTop="-100dp"
+                android:layout_height="800dp"
+                android:layout_marginTop="-144dp"
 
                 tools:context=".MainActivity">
 
                 <FrameLayout
-                    android:id="@+id/frame1"
+                    android:id="@+id/frameLayout6"
                     android:layout_width="match_parent"
-                    android:layout_height="144dp"
+                    android:layout_height="634dp"
                     android:layout_marginStart="16dp"
                     android:layout_marginEnd="16dp"
+                    android:layout_marginBottom="5dp"
+                    android:background="@drawable/backgroundshape"
+                    app:layout_constraintBottom_toTopOf="@+id/frame1"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:ignore="MissingConstraints">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/backgroundshape"
+                        android:gravity="center"
+                        android:padding="15dp"
+                        android:text="20- Hour Forecast"
+                        android:textColor="@color/black"
+                        android:textSize="20dp"
+                        android:textStyle="bold" />
+
+                    <ListView
+                        android:id="@+id/forecastListView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="60dp" />
+
+
+                </FrameLayout>
+
+                <FrameLayout
+                    android:id="@+id/frame1"
+                    android:layout_width="match_parent"
+                    android:layout_height="140dp"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginBottom="2dp"
                     android:background="@drawable/backgroundshape"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="@+id/frameLayout6"
@@ -429,43 +464,6 @@
                         android:text="© 2024 Nabil. All Rights Reserved "
                         android:textColor="@android:color/holo_blue_light"
                         android:textSize="20sp" />
-                </FrameLayout>
-
-                <FrameLayout
-                    android:id="@+id/frameLayout6"
-                    android:layout_width="match_parent"
-                    android:layout_height="553dp"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginTop="5dp"
-                    android:layout_marginEnd="16dp"
-                    android:background="@drawable/backgroundshape"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="0.0"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    tools:ignore="MissingConstraints">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="1dp"
-                        android:layout_marginTop="1dp"
-                        android:layout_marginEnd="1dp"
-                        android:background="@drawable/backgroundshape"
-                        android:gravity="center"
-                        android:padding="15dp"
-                        android:text="5-Day Forecast"
-                        android:textColor="@color/black"
-                        android:textSize="20dp"
-                        android:textStyle="bold" />
-
-                    <ListView
-                        android:id="@+id/forecastListView"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="60dp" />
-
-
                 </FrameLayout>
 
             </androidx.constraintlayout.widget.ConstraintLayout>

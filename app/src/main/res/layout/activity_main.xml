@@ -8,6 +8,11 @@
     android:background="@drawable/sunny_background"
     android:fitsSystemWindows="true"
     tools:context=".MainActivity">
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefreshLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:ignore="MissingClass">
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/nestedScrollView"
@@ -432,27 +437,11 @@
                     app:layout_constraintTop_toBottomOf="@+id/frameLayout6"
                     tools:ignore="MissingConstraints">
 
-                    <TextView
-                        android:id="@+id/textView8"
+                    <ImageView
+                        android:id="@+id/imageView3"
                         android:layout_width="match_parent"
-                        android:layout_height="46dp"
-                        android:background="@drawable/backgroundshape"
-                        android:fontFamily="sans-serif"
-                        android:gravity="center"
-                        android:padding="10dp"
-                        android:text="Contact "
-                        android:textColor="@color/black"
-                        android:textSize="20sp" />
-
-                    <TextView
-                        android:id="@+id/textView3"
-                        android:layout_width="match_parent"
-                        android:layout_height="47dp"
-                        android:layout_marginTop="48dp"
-                        android:padding="10dp"
-                        android:text="Nabilboussalham96@gmail.com"
-                        android:textColor="@color/black"
-                        android:textSize="20sp" />
+                        android:layout_height="91dp"
+                        android:src="@drawable/estsb" />
 
                     <TextView
                         android:id="@+id/textView5"
@@ -470,5 +459,5 @@
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
-
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

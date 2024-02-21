@@ -12,6 +12,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.myweatherapp.Forecast.ForecastAdapter
 import com.example.myweatherapp.Forecast.ForecastData
 import com.example.myweatherapp.Forecast.ForecastItem
@@ -47,13 +48,20 @@ class MainActivity : AppCompatActivity() {
     private val API_BASE_URL = "https://api.openweathermap.org/data/2.5/"
     private var currentWeatherApp: WeatherApp? = null
     private val locationPermissionCode = 1
-
+    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
+    private lateinit var searchView: SearchView
     private lateinit var locationCallback: LocationCallback
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
+        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout)
+        searchView = findViewById(R.id.searchView)
+        swipeRefreshLayout.setOnRefreshListener {
+            // Perform refresh action here
+            fetchWeatherDataByLocation()
+        }
         val savedLatitude = getDoublePreference(PREF_KEY_LATITUDE)
         val savedLongitude = getDoublePreference(PREF_KEY_LONGITUDE)
 
@@ -64,14 +72,18 @@ class MainActivity : AppCompatActivity() {
             // Location doesn't exist, request location updates
             setupLocation()
         }
-        setupLocation()
+
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         fetchWeatherDataByLocation()
 
         setupSearchCity()
         listView = findViewById(R.id.forecastListView)
+
+
+
     }
+
 
     private fun setupLocation() {
         // Check and request location permissions
@@ -143,13 +155,7 @@ class MainActivity : AppCompatActivity() {
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
+
             return
         }
         LocationServices.getFusedLocationProviderClient(this)
@@ -223,6 +229,11 @@ class MainActivity : AppCompatActivity() {
 
         response.enqueue(object : Callback<WeatherApp> {
             override fun onResponse(call: Call<WeatherApp>, response: Response<WeatherApp>) {
+                if (swipeRefreshLayout.isRefreshing) {
+                    swipeRefreshLayout.isRefreshing = false // Stop refreshing indicator
+                    searchView.setQuery("", false)
+                    searchView.clearFocus()
+                }
                 val responseBody = response.body()
                 if (response.isSuccessful && responseBody != null) {
                     handleWeatherData(responseBody)
@@ -238,6 +249,11 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onFailure(call: Call<WeatherApp>, t: Throwable) {
+                if (swipeRefreshLayout.isRefreshing) {
+                    swipeRefreshLayout.isRefreshing = false // Stop refreshing indicator
+                    searchView.setQuery("", false)
+                    searchView.clearFocus()
+                }
                 Toast.makeText(
                     this@MainActivity,
                     "API request failed: ${t.message}",

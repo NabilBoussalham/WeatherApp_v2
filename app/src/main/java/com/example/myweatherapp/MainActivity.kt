@@ -56,11 +56,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
-        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout)
-        searchView = findViewById(R.id.searchView)
-        swipeRefreshLayout.setOnRefreshListener {
-            // Perform refresh action here
-            fetchWeatherDataByLocation()
         }
         val savedLatitude = getDoublePreference(PREF_KEY_LATITUDE)
         val savedLongitude = getDoublePreference(PREF_KEY_LONGITUDE)
@@ -76,7 +71,17 @@ class MainActivity : AppCompatActivity() {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         fetchWeatherDataByLocation()
-
+        
+        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout)
+        searchView = findViewById(R.id.searchView)
+        swipeRefreshLayout.setOnRefreshListener {
+            if (savedLatitude != null && savedLongitude != null) {
+            // Location exists, fetch weather data with saved location
+            fetchWeatherDataByLocation(savedLatitude, savedLongitude)
+        } else {
+            // Location doesn't exist, request location updates
+            setupLocation()
+        }
         setupSearchCity()
         listView = findViewById(R.id.forecastListView)
 
